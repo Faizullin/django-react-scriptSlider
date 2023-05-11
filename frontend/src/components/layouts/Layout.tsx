@@ -2,6 +2,9 @@ import React, { ReactNode, useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
 import { Link } from 'react-router-dom'
 import { fetchUserData, logout } from '../../redux/store/reducers/authSlice'
+import Header from '../Header'
+import Footer from '../Footer'
+import Navbar from '../Navbar'
 
 type ILayoutProps = {
   children: ReactNode
@@ -26,18 +29,12 @@ export default function Layout({ children }: ILayoutProps) {
     }
   },[])
   return (
-    <div>
-      {
-        user.isAuthenticated ? (
-          <div>
-            <div>{user.name} - {user.email}</div>
-            <button onClick={handleLogout}>Log out</button>
-          </div>
-        ) : (
-          <Link to={'/auth/login'}>Please log in</Link>
-        )
-      }
+    <>
+        <Header>
+            <Navbar auth={null}/>
+        </Header>
         {children}
-    </div>
+        <Footer />
+    </>
   )
 }

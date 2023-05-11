@@ -7,7 +7,10 @@ import ScriptDetailModal from '../../components/modal/ScriptDetailModal';
 import ScriptCreateModal from '../../components/modal/ScriptCreateModal';
 import ScriptCreateOrEditForm from './CreateOrEditForm';
 import { IScript } from '../../models/IScript';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import Breadcrumbs from '../../components/Breadcrumbs';
+import ScriptItem from './ScriptItem';
+import Sidebar from '../../components/sidebar/Sidebar';
 
 export interface IScriptIndexProps {
 }
@@ -18,6 +21,7 @@ export interface IScriptIndexState {
 export default function ScriptIndex (props: IScriptIndexProps) {
     const dispatch = useAppDispatch()
     const navigate = useNavigate()
+    const params = useParams()
     const {scripts, loading} = useAppSelector(state => state.script) 
     const [showDetailModal,setShowDetailModal] = React.useState(false)
     const [showCreateModal,setShowCreateModal] = React.useState(false)
@@ -28,6 +32,9 @@ export default function ScriptIndex (props: IScriptIndexProps) {
       loadData()
       console.log("get dscripts")
     },[dispatch])
+    React.useEffect(() => {
+      console.log("params change", params)
+    },[params])
     
     const loadData = () => {
       dispatch(fetchScriptList())
@@ -78,6 +85,31 @@ export default function ScriptIndex (props: IScriptIndexProps) {
     }
     return (
       <Layout>
+        <Breadcrumbs>
+              <h2>Post</h2>
+              <p>Odio et unde deleniti. Deserunt numquam exercitationem. Officiis quo odio sint voluptas consequatur ut a odio voluptatem. Sit dolorum debitis veritatis natus dolores. Quasi ratione sint. Sit quaerat ipsum dolorem.</p>
+        </Breadcrumbs>
+        <section id="blog" className="blog">
+            <div className="container mx-auto" data-aos="fade-up">
+                <div className="flex justify-end items-center items-baseline border-b border-gray-200 px-6 pb-4 md:px-0">
+                    {/* <SortDropdown/> */}
+                    {/* <Sidebar.TriggerButton onClick={ () => setFiltersSidebarOpen(!filtersSidebarOpen) } /> */}
+                </div>
+
+                <div className="flex mt-8">
+                    <div className="lg:w-2/3 ">
+                        <div className="flex flex-wrap mx-auto posts-list">
+                            { scripts.map((script,index) => (
+                                <ScriptItem key={script.id} script={script} />
+                            ))}
+
+                        </div>
+                        {/* <Pagination items={posts}/> */}
+                    </div>
+                    <Sidebar />
+                </div>
+            </div>
+        </section>
         <button onClick={(e) => handleCreateOrEditScript()}>Create New</button>
         { !loading ? (
           <div>

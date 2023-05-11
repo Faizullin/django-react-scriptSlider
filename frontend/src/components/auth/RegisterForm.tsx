@@ -1,8 +1,12 @@
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { registerUser, } from '../../redux/store/reducers/authSlice';
 import { IRegisterProps } from '../../services/AuthService';
-import { useAppDispatch } from '../../hooks/redux';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import InputLabel from '../InputLabel';
+import TextInput from './TextInput';
+import AuthLayout from '../layouts/AuthLayout';
+import PrimaryButton from './PrimaryButton';
 
 export interface IRegisterFormProps {
 }
@@ -10,7 +14,8 @@ export interface IRegisterFormProps {
 export default function RegisterForm (props: IRegisterFormProps) {
     const dispath = useAppDispatch()
     const navigate = useNavigate()
-    // const {success, error, loading} = useAppSelector(state => state.auth)
+    const {success, error, loading} = useAppSelector(state => state.auth)
+
     const [data,setData] = React.useState<IRegisterProps>({
         username: '',
         email: '',
@@ -37,46 +42,75 @@ export default function RegisterForm (props: IRegisterFormProps) {
 
     return (
         <form onSubmit={handleSubmit}>
-            <label>
-            Username:
-            <input
-                type="text"
-                name="username"
-                value={data.username}
-                onChange={handleInputChange} 
-            />
-            </label>
-            <br />
-            <label>
-            Email:
-            <input
-                type="email"
-                name="email"
-                value={data.email}
-                onChange={handleInputChange} 
-            />
-            </label>
-            <br />
-            <label>
-            Password:
-            <input
-                type="password"
-                name="password"
-                value={data.password}
-                onChange={handleInputChange} 
-            />
-            </label>
-            <label>
-            Password Confirmation:
-            <input
-                type="password"
-                name="password_confirmation"
-                value={data.password_confirmation}
-                onChange={handleInputChange}
-                autoComplete='password_confirmation'/>
-            </label>
-            <br />
-            <input type="submit" value="Submit" />
+            <div>
+                <InputLabel htmlFor="username" value="Username" />
+                <TextInput
+                    type="text"
+                    name="username"
+                    value={data.username}
+                    className="mt-1 block w-full"
+                    autoComplete="username"
+                    isFocused={true}
+                    onChange={handleInputChange}
+                    required
+                />
+
+                {/* <InputError message={errors.name} className="mt-2" /> */}
+            </div>
+
+            <div className="mt-4">
+                <InputLabel htmlFor="email" value="Email" />
+
+                <TextInput
+                    type="email"
+                    name="email"
+                    value={data.email}
+                    className="mt-1 block w-full"
+                    autoComplete="username"
+                    onChange={handleInputChange}
+                    required
+                />
+
+                {/* <InputError message={errors.email} className="mt-2" /> */}
+            </div>
+
+            <div className="mt-4">
+                <InputLabel htmlFor="password" value="Password" />
+
+                <TextInput
+                    type="password"
+                    name="password"
+                    value={data.password}
+                    className="mt-1 block w-full"
+                    autoComplete="new-password"
+                    onChange={handleInputChange}
+                    required
+                />
+
+                {/* <InputError message={errors.password} className="mt-2" /> */}
+            </div>
+
+            <div className="mt-4">
+                <InputLabel htmlFor="password_confirmation" value="Confirm Password" />
+
+                <TextInput
+                    type="password"
+                    name="password_confirmation"
+                    value={data.password_confirmation}
+                    className="mt-1 block w-full"
+                    onChange={handleInputChange}
+                    required
+                />
+
+                {/* <InputError message={errors.password_confirmation} className="mt-2" /> */}
+            </div>
+
+            <PrimaryButton className="mt-6" processing={loading}>
+                Register
+            </PrimaryButton>
+            <Link to="/auth/login" className="underline text-sm text-gray-600 hover:text-gray-900 mt-4">
+                Already registered?
+            </Link>
         </form>
     );
 }

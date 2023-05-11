@@ -142,10 +142,11 @@ CHANNEL_LAYERS = {
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = [
-    'authkey',
-    'AuthKey',
-]
+# CORS_ALLOW_HEADERS = [
+#     'authkey',
+#     'AuthKey',
+#     'Authorization'
+# ]
 
 REST_FRAMEWORK = {
     'DATETIME_FORMAT': "%m/%d/%Y %I:%M%P",
