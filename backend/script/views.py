@@ -4,15 +4,16 @@ from rest_framework.views import APIView
 from rest_framework import status, permissions,generics, filters
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
+from django.db import transaction
 from rest_framework_simplejwt.authentication import  JWTAuthentication
+from django.template.loader import render_to_string
 from io import BytesIO
 from .models import Script, AuthKey
 from script_page.models import ScriptPage
 from .serializers import *
 from .DOCXParser import DOCXParser
-from django.db import transaction, IntegrityError
 from .tasks import send_data_to_ws
-from django.template.loader import render_to_string
+from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import AuthKeyPermission, IsOwnerAccessPermission, get_and_update_authKey_token
 
 class ScriptListView(generics.ListAPIView):
@@ -20,6 +21,11 @@ class ScriptListView(generics.ListAPIView):
     serializer_class = ScriptSerializer
     authentication_classes = [JWTAuthentication, ]
     permission_classes = (permissions.IsAuthenticated,)
+
+    filter_backends = [DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter]
+    #filterset_fields = ['type','shop']
+    search_fields = ['title']
+    ordering_fields = ['created_at','updated_at','pages_count']
     def get_queryset(self):
         qs = super().get_queryset() 
         user = self.request.user
