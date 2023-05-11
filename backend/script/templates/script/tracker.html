@@ -1,0 +1,68 @@
+<script>
+    class ScriptPresentSender {
+        constructor(base_url, script_id, requestWithIndexes = false, total = 0, token='') {
+            this.base_url = base_url;
+            this.requestWithIndexes =requestWithIndexes;
+            this.currentIndex = 1;
+            this.total = total;
+            this.script_id = script_id;
+            this.token = token;
+            this.initKeyDownListeners();
+            this.pr([base_url, script_id, requestWithIndexes, total ]);
+        }
+        pr(data){
+            console.log(data);
+        }
+        initKeyDownListeners() {
+            const base = this;
+            document.addEventListener("keydown", function(event) {
+                if (event.keyCode === 39) {
+                    base.pr('next');
+                    base.paginateNext();
+                }
+                else if (event.keyCode === 37) {
+                    base.pr('prev');
+                    base.paginatePrev();
+                }
+            })
+        }
+        paginatePrev() {
+            if(this.requestWithIndexes) {
+                if(this.currentIndex > 1 && this.currentIndex <= this.total) {
+                    this.currentIndex--;
+                    this.makeRequest(this.currentIndex);
+                }
+            } else {
+                this.makeRequest('prev');
+            }
+        }
+        paginateNext() {
+            if(this.requestWithIndexes) {
+                if(this.currentIndex > 0 && this.currentIndex < this.total) {
+                    this.currentIndex++;
+                    this.makeRequest(this.currentIndex);
+                }
+            } else {
+                this.makeRequest('next');
+            }
+        }
+        makeRequest(command) {
+            fetch(`${this.base_url}/api/script/${this.script_id}/presentaion/scroll/?index=${command}`,{
+                headers: {
+                    Accept: 'application/json',
+                    AuthKey: this.token,
+                }
+            }).then(response => {
+                this.pr(['resp',response]);
+                if('authKey_token' in response) {
+                    this.token = response['authKey_token'] || ''
+                }
+            }).catch(error => {
+                this.pr(['error',error]);
+            });
+        }
+    }
+    
+    
+    const scriptPresentSender =  new ScriptPresentSender('{{ next_page_url }}', Number('{{ script_id }}') , Boolean('{{ requestWithIndexes  }}'), Number('{{ total_pages  }}',),'{{ authKey_token }}');
+</script>
