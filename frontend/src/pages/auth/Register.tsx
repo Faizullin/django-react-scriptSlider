@@ -1,4 +1,4 @@
-import RegisterForm from '../../components/auth/RegisterForm';
+import RegisterForm from '../../components/form/auth/RegisterForm';
 import AuthLayout from '../../components/layouts/AuthLayout';
 
 interface IRegisterProps {

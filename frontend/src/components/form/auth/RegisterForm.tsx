@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { registerUser, } from '../../redux/store/reducers/authSlice';
-import { IRegisterProps } from '../../services/AuthService';
-import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import InputLabel from '../InputLabel';
+import { registerUser, } from '../../../redux/store/reducers/authSlice';
+import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
+import InputLabel from '../../InputLabel';
 import TextInput from './TextInput';
-import AuthLayout from '../layouts/AuthLayout';
 import PrimaryButton from './PrimaryButton';
+import { IRegisterProps } from '../../../models/IAuthUser';
+import InputError from './InputError';
 
 export interface IRegisterFormProps {
 }
@@ -14,7 +14,7 @@ export interface IRegisterFormProps {
 export default function RegisterForm (props: IRegisterFormProps) {
     const dispath = useAppDispatch()
     const navigate = useNavigate()
-    const {success, error, loading} = useAppSelector(state => state.auth)
+    const {errors, loading} = useAppSelector(state => state.auth)
 
     const [data,setData] = React.useState<IRegisterProps>({
         username: '',
@@ -55,7 +55,7 @@ export default function RegisterForm (props: IRegisterFormProps) {
                     required
                 />
 
-                {/* <InputError message={errors.name} className="mt-2" /> */}
+                <InputError message={errors.name} className="mt-2" />
             </div>
 
             <div className="mt-4">
@@ -71,7 +71,7 @@ export default function RegisterForm (props: IRegisterFormProps) {
                     required
                 />
 
-                {/* <InputError message={errors.email} className="mt-2" /> */}
+                <InputError message={errors.email} className="mt-2" />
             </div>
 
             <div className="mt-4">
@@ -87,7 +87,7 @@ export default function RegisterForm (props: IRegisterFormProps) {
                     required
                 />
 
-                {/* <InputError message={errors.password} className="mt-2" /> */}
+                <InputError message={errors.password} className="mt-2" />
             </div>
 
             <div className="mt-4">
@@ -102,7 +102,7 @@ export default function RegisterForm (props: IRegisterFormProps) {
                     required
                 />
 
-                {/* <InputError message={errors.password_confirmation} className="mt-2" /> */}
+                <InputError message={errors.password_confirmation} className="mt-2" />
             </div>
 
             <PrimaryButton className="mt-6" processing={loading}>

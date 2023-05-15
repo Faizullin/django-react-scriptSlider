@@ -1,5 +1,4 @@
 from django.core.exceptions import ObjectDoesNotExist
-
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -7,8 +6,9 @@ from rest_framework import status
 from rest_framework import status, permissions,generics, filters
 from rest_framework_simplejwt.authentication import  JWTAuthentication
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
-from .serializers import UserSerializer, UserRegisterSerializer
+from .serializers import UserSerializer, UserRegisterSerializer, ChangePasswordSerializer, UpdateProfileSerializer
 from .models import User
 
 
@@ -36,3 +36,19 @@ class AuthProfileView(APIView):
             return Response(data, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             return Response({'error': f"No user data with id {user} found"}, status=status.HTTP_404_NOT_FOUND)
+
+class ChangePasswordView(generics.UpdateAPIView):
+    serializer_class = ChangePasswordSerializer
+    queryset = User.objects.all()
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
+    
+class UpdateProfileView(generics.UpdateAPIView):
+    serializer_class = UpdateProfileSerializer
+    permission_classes = (IsAuthenticated,)
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return self.request.user

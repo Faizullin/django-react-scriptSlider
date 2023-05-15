@@ -1,5 +1,5 @@
 import axios, { InternalAxiosRequestConfig, AxiosResponse  } from "axios";
-import { AuthResponse } from "../models/response/AuthResponse";
+import { AuthResponse } from "../models/response/IAuthResponse";
 
 export const API_URL = 'http://localhost:8000/api'
 
@@ -19,10 +19,9 @@ $api.interceptors.response.use((config: AxiosResponse) => {
     return config
 }, async (error) => {
     const originalRequest = error.config;
-    if(error.response.status == 401){
+    if(error.response.status === 401){
         try{
             const refresh = localStorage.getItem('refreshToken') || ''
-            console.log("Try again")
             if(refresh.length !== 0){
                 const response = await axios.post<AuthResponse>(`${API_URL}/token/refresh/`,{
                     refresh

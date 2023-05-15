@@ -1,31 +1,37 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework import status, permissions,generics, filters
-from django.core.exceptions import ValidationError
-from django.core.validators import FileExtensionValidator
-from django.db import transaction
 from rest_framework_simplejwt.authentication import  JWTAuthentication
 from django.template.loader import render_to_string
-from io import BytesIO
-from .models import Script, AuthKey
 from script_page.models import ScriptPage
 from .serializers import *
-from .DOCXParser import DOCXParser
 from .tasks import send_data_to_ws
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import AuthKeyPermission, IsOwnerAccessPermission, get_and_update_authKey_token
+from django.db.models import Count
+# import logging; logging.getLogger('script').info("WebSocket connection established,"+str(self.request.data)+str(script)+str(pk))
+
+class ScriptListPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'limit'
+    max_page_size = 100
+
 
 class ScriptListView(generics.ListAPIView):
-    queryset = Script.objects.all()
+    queryset = Script.objects.annotate(pages_count=Count('pages'))
     serializer_class = ScriptSerializer
     authentication_classes = [JWTAuthentication, ]
     permission_classes = (permissions.IsAuthenticated,)
 
     filter_backends = [DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter]
-    #filterset_fields = ['type','shop']
-    search_fields = ['title']
-    ordering_fields = ['created_at','updated_at','pages_count']
+    search_fields = ['title',]
+    ordering_fields = ['id','created_at','updated_at','pages_count']
+    ordering = ['-updated_at']
+
+    pagination_class = ScriptListPagination
+
     def get_queryset(self):
         qs = super().get_queryset() 
         user = self.request.user
@@ -40,129 +46,38 @@ class ScriptDetailView(generics.RetrieveAPIView):
         context = super(ScriptDetailView, self).get_context_data(**kwargs)
         return context
     
-class ScriptCreateView(APIView):
-    serializer_class = ScriptSerializer
+class ScriptCreateView(generics.CreateAPIView):
+    serializer_class = ScriptCreateOrUpdateSerializer
     authentication_classes = [JWTAuthentication, ]
     permission_classes = (permissions.IsAuthenticated,)
-
+    
     def post(self, request, *args, **kwargs):
-        up_file = request.FILES.get('file')
-        if(up_file is not None):
-            return self.post_process_with_file(request, *args, **kwargs)
-        else:
-            return self.post_process_with_script(request, *args, **kwargs)
-
-    def post_process_with_script(self, request, *args, **kwargs):
-        raw_data = request.data
-        script_data = ScriptSerializer(data=raw_data,context={'request': request})
-        if script_data.is_valid():
-            return Response(script_data.data)
-        return Response(script_data.errors, status=400)
-        # validator = FileExtensionValidator(allowed_extensions=valid_extensions)
-        # try:
-        #     validator(up_file)
-        # except ValidationError as e:
-        #     return Response({'error': e.message}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            with transaction.atomic():
-                script = Script.objects.create(title = script_data['name'], owner=self.request.user)
-                for i,script_page_data in enumerate(script_data['pages']):
-                    ScriptPage.objects.create(title = script_page_data['title'], content=script_page_data['content'], script = script, index = i + 1)                  
-        except Exception as err:
-            return Response('IntegrityError'+str(err), status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(ScriptSerializer(script).data, status.HTTP_201_CREATED)
-        
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
-    def post_process_with_file(self, request, *args, **kwargs):
-        up_file = request.FILES.get('file')
-        valid_extensions = ['.docx','docx']
-        validator = FileExtensionValidator(allowed_extensions=valid_extensions)
-        try:
-            validator(up_file)
-        except ValidationError as e:
-            return Response({'error': e.message}, status=status.HTTP_400_BAD_REQUEST)
-        document = None
-        try:
-            document = DOCXParser(BytesIO(up_file.read()))
-        except:
-            return Response({'error': 'Failed to extract text from file: ' + e.message}, status=status.HTTP_400_BAD_REQUEST)
-            
-        try:
-            with transaction.atomic():
-                script = Script.objects.create(title = up_file.name, owner=self.request.user)
-                data = document.get_content_by_sections()
-                for i,(title, content) in enumerate(data):
-                    ScriptPage.objects.create(title = title, content=content, script = script, index = i + 1)                  
-        except Exception as err:
-            return Response('IntegrityError'+str(err), status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(ScriptSerializer(script).data, status.HTTP_201_CREATED)
-    
-class ScriptEditView(APIView):
-    serializer_class = ScriptSerializer
+class ScriptEditView(generics.UpdateAPIView):
+    queryset = Script.objects.all()
+    serializer_class = ScriptCreateOrUpdateSerializer
     authentication_classes = [JWTAuthentication, ]
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,IsOwnerAccessPermission)
 
-    def get_object(self, pk):
-        return get_object_or_404(Script, pk=pk)
 
-    def patch(self, request, pk, *args, **kwargs):
-        script = self.get_object(pk)
-        up_file = request.FILES.get('file')
-        if(up_file is not None):
-            return self.post_process_with_file(request, script, *args, **kwargs)
-        else:
-            return self.post_process_with_script(request, script, *args, **kwargs)
-   
-    def post_process_with_script(self, request, obj, *args, **kwargs):
-        raw_data = request.data
-        script_data = ScriptSerializer(data=raw_data,context={'request': request})
-        if script_data.is_valid():
-            return Response(script_data.data)
-        return Response(script_data.errors, status=400)
-        # validator = FileExtensionValidator(allowed_extensions=valid_extensions)
-        # try:
-        #     validator(up_file)
-        # except ValidationError as e:
-        #     return Response({'error': e.message}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            with transaction.atomic():
-                script = Script.objects.create(title = script_data['name'], owner=self.request.user)
-                for i,script_page_data in enumerate(script_data['pages']):
-                    ScriptPage.objects.create(title = script_page_data['title'], content=script_page_data['content'], script = script, index = i + 1)                  
-        except Exception as err:
-            return Response('IntegrityError'+str(err), status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(ScriptSerializer(script).data, status.HTTP_201_CREATED)
+    # def patch(self, request, pk, *args, **kwargs):
+    #     script = self.get_object()
+    #     serializer = self.get_serializer(data=request.data, context={'request': request})
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED,)
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
     
-    def post_process_with_file(self, request, obj, *args, **kwargs):
-        up_file = request.FILES.get('file')
-        valid_extensions = ['.docx','docx']
-        validator = FileExtensionValidator(allowed_extensions=valid_extensions)
-        try:
-            validator(up_file)
-        except ValidationError as e:
-            return Response({'error': e.message}, status=status.HTTP_400_BAD_REQUEST)
-        document = None
-        try:
-            document = DOCXParser(BytesIO(up_file.read()))
-        except:
-            return Response({'error': 'Failed to extract text from file: ' + e.message}, status=status.HTTP_400_BAD_REQUEST)
-            
-        try:
-            with transaction.atomic():
-                obj.title = up_file.name
-                obj.save()
-                data = document.get_content_by_sections()
-                for i,(title, content) in enumerate(data):
-                    script_page_obj = ScriptPage.objects.get(script = obj, index = i + 1)
-                    script_page_obj.title = title
-                    script_page_obj.content = content
-                    script_page_obj.save()
-                    #obj.title = title ScriptPage.objects.create(title = title, content=content, script = script, index = i + 1) 
-        except ScriptPage.DoesNotExist:
-            return Response('Script Page does not exist', status.HTTP_400_BAD_REQUEST)        
-        except Exception as err:
-            return Response('IntegrityError'+str(err), status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(ScriptSerializer(obj).data, status.HTTP_201_CREATED)
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+
     
 class ScriptDeleteView(generics.DestroyAPIView):
     queryset = Script.objects.all()
@@ -189,7 +104,7 @@ class ScriptScrollTrackUrlView(APIView):
             'next_page_url': domain_url,
             'script_id': script.pk,
             'requestWithIndexes': True,
-            'total_pages': script.script_pages.count(),
+            'total_pages': script.pages.count(),
             'authKey_token': authKey_token,
         }).replace('<script>','').replace('</script>','')
         return Response(data={

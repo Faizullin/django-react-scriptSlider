@@ -1,30 +1,88 @@
-import React from 'react'
-import { IScriptPage } from '../../../models/IScriptPage'
+import React, { useRef, useState } from 'react'
 import InputBlock from './InputBlock'
-import { IScriptPageCreateState } from '../script/CreateOrEditFormTypeForm'
+import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill';
+import useDebouncedInput from '../../../hooks/useDebouncedInput';
+import { IScriptPageCreateFormProps, setCurrentScriptPageFormData, setUpdated } from '../../../redux/store/reducers/scriptFormSlice';
+import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 
 interface ScriptPageItemForm {
-    value: IScriptPageCreateState,
-    defaultValue?: IScriptPage,
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
     errors: any
 }
 
+const modules = {
+  toolbar: [
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'header': 1 }, { 'header': 2 }],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    ['link', 'image'],
+    ['clean']
+  ],
+  clipboard: {
+    matchVisual: false,
+  },
+};
+
+const formats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+  'link', 'image',
+];
+
 const ScriptPageItemForm = (props: ScriptPageItemForm) => {
-    const [value, setValue] = React.useState({} as IScriptPageCreateState)  
+    const dispatch = useAppDispatch()
+    const { currentPageIndex, currentScriptPageFormData, updated } = useAppSelector(state => state.scriptForm)
+    const formFieldsRef = useRef<any>({});
+    const [value, setValue] = React.useState<IScriptPageCreateFormProps>({
+        index: 0,
+        id: null,
+        title: '',
+        content: ''
+    })
+
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        props.onChange(event)
+        event.preventDefault()
+        setValue({
+          ...value,
+          [event.target.name]: event.target.value,
+        })
     }
-    
+    const handleContentChange = (content: string) => {
+        setValue({  
+            ...value,
+            content,
+        })
+    }
+
     React.useEffect(() => {
-        console.log("change child to",props.value)
-        setValue(props.value)
-    }, [props.value])
+        // console.log('currentScriptPageFormData',currentScriptPageFormData,updated)
+        if(updated) {
+            setValue({...currentScriptPageFormData})
+            dispatch(setUpdated(false))
+        }
+    }, [updated])
+
+    React.useEffect(() => {
+        // console.log('chaneg',value,currentScriptPageFormData,updated,currentScriptPageFormData.index === value.index)
+        if(currentScriptPageFormData.index !== value.index) {
+            setValue(currentScriptPageFormData)
+        } else {
+            dispatch(setCurrentScriptPageFormData({...value}))
+        }
+    }, [value])
+
     return (
         <div>
-            <h1>Script Page #{props.value.index} {value.title}</h1>
-            <InputBlock defaultValue={value.title} value={value.title} name='title' onChange={handleChange}/>
-            <InputBlock defaultValue={value.content} value={value.content} name='content' onChange={handleChange}/>
+            <h1 className='mb-4'>Script Page #{ currentPageIndex } {value.title}</h1>
+            <InputBlock value={value.title} name='title' onChange={ handleChange }/>
+            <div>
+              <ReactQuill
+                value={value.content} onChange={handleContentChange} 
+                modules={modules}
+                formats={formats}
+              />
+            </div>
         </div>
     )
 }

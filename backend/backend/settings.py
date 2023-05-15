@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_rest_passwordreset',
     'django_filters',
     'authentication',
     'script',
@@ -141,11 +142,24 @@ CHANNEL_LAYERS = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'authkey',
     'AuthKey',
     'Authorization',
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 REST_FRAMEWORK = {
@@ -157,10 +171,6 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = 'authentication.User'
-# ACCOUNT_AUTHENTICATION_METHOD = 'email'
-# ACCOUNT_EMAIL_REQUIRED = True   
-# ACCOUNT_USERNAME_REQUIRED = False
-
 
 from datetime import timedelta
 SIMPLE_JWT = {
@@ -188,3 +198,17 @@ if DEBUG:
             },
         },
     }
+
+if DEBUG:
+    EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+    EMAIL_HOST_USER = 'd5dd25e382850a'
+    EMAIL_HOST_PASSWORD = 'f1bd7debba9b5a'
+    EMAIL_PORT = '2525'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = '<your email address>'
+    EMAIL_HOST_PASSWORD = '<your email password>'
+    DEFAULT_FROM_EMAIL = '<your email address>'

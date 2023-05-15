@@ -7,7 +7,7 @@ export default function Footer() {
 			  <div className="flex flex-wrap  gy-4">
 			    <div className="lg:w-2/5 pr-4 pl-4 md:w-full pr-4 pl-4 footer-info">
                     <Link to="" className="logo flex items-center">
-                        <span>ScriptSlider</span>
+                        <span>ScriptSliderApp</span>
                     </Link>
                     <p>Cras fermentum odio eu feugiat lide par naso tierra. Justo eget nada terra videa magna derita valies darta donna mare fermentum iaculis eu non diam phasellus.</p>
                     <div className="social-links flex mt-4">
@@ -47,7 +47,7 @@ export default function Footer() {
                         <h4>Our Services</h4>
                         <ul>
                             <li>
-                                <Link to="/script?action=create">Create Script</Link>
+                                <a href="/script?action=create">Create Script</a>
                             </li>
                             <li>
                                 <Link to="/script">Scripts</Link>

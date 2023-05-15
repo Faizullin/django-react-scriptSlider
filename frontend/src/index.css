@@ -1,5 +1,6 @@
 @import "assets/css/main.css";
 @import "assets/css/_header.css";
+@import "assets/css/_reset-styles.css";
 
 @tailwind base;
 @tailwind components;

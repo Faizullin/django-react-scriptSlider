@@ -2,6 +2,7 @@ import React from "react";
 
 interface IPrimaryButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>{
     processing?: boolean
+    onClick?: (data: any) => any | React.MouseEventHandler<HTMLButtonElement>
 }
 
 export default function PrimaryButton(props: IPrimaryButtonProps) {
@@ -14,6 +15,7 @@ export default function PrimaryButton(props: IPrimaryButtonProps) {
                 } ` + props.className
             }
             disabled={props.processing}
+            onClick={props.onClick}
         >
             { props.children }
         </button>

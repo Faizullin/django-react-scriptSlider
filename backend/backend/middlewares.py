@@ -23,12 +23,16 @@ class WebSocketJWTAuthMiddleware:
 
     async def __call__(self, scope, receive, send):
         parsed_query_string = parse_qs(scope["query_string"])
-        token = parsed_query_string.get(b"token")[0].decode("utf-8")
-
-        try:
-            access_token = AccessToken(token)
-            scope["user"] = await get_user(access_token["user_id"])
-        except TokenError:
+        parsed_query_string_token = parsed_query_string.get(b"token")
+        if not parsed_query_string_token:
             scope["user"] = AnonymousUser()
+        else:
+            token = parsed_query_string_token[0].decode("utf-8")
+
+            try:
+                access_token = AccessToken(token)
+                scope["user"] = await get_user(access_token["user_id"])
+            except TokenError:
+                scope["user"] = AnonymousUser()
 
         return await self.app(scope, receive, send)

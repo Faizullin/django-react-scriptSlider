@@ -6,7 +6,7 @@ from script.models import Script
 class ScriptPage(models.Model):
     title = models.CharField('Name',max_length=100)
     index = models.IntegerField("Index")
-    script = models.ForeignKey(Script, related_name='script_pages', on_delete=models.CASCADE)
+    script = models.ForeignKey(Script, related_name='pages', on_delete=models.CASCADE)
     content = models.TextField('Text')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

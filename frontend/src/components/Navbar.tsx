@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { NavLink } from "react-router-dom";
+import AuthDropdown from "./form/auth/AuthDropdown";
 
 export interface INavbarProps {
     auth: any
 }
-
-
 
 export default function Navbar({auth} : INavbarProps){
     const [isOpenNavbar,setIsOpenNavbar] = useState(false);
@@ -22,7 +21,7 @@ export default function Navbar({auth} : INavbarProps){
     return (
         <div className="container mx-auto flex items-center justify-between px-4">
             <Link to="/" className="logo flex items-center">
-                <h1>ScriptSlider<span>.</span></h1>
+                <h1>ScriptSliderApp<span>.</span></h1>
             </Link>
             <div className={`${ isOpenNavbar ? "" : "hidden" } fixed inset-0 mobile-nav-bg`}>
             </div>
@@ -32,15 +31,12 @@ export default function Navbar({auth} : INavbarProps){
                         <NavLink to="/">Home</NavLink>
                     </li>
                     <li>
-                        <NavLink to="/">About</NavLink>
-                    </li>
-                    <li>
                         <NavLink to="/script">Scripts</NavLink>
                     </li>
                     <li>
-                        <Link to="/script?action=create">Create Script</Link>
+                        <a href="/script?action=create">Create Script</a>
                     </li>
-                    {/* <AuthDropdown auth={auth} className={ route().current('pages.home') ? `active` : `` }/> */}
+                    <AuthDropdown />
                 </ul>
             </nav>
             <div className="block md:hidden">

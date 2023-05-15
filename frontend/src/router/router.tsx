@@ -5,40 +5,96 @@ import Login from "../pages/auth/Login";
 import ProtectedRoute from "./ProtectedRoute";
 import ScriptIndex from "../pages/script";
 import ScriptPresentation from "../pages/script/Presentation";
+import About from "../pages/About";
+import ForgotPassword from '../pages/auth/ForgotPassword';
+import ForgotPasswordConfirm from "../pages/auth/ForgotPasswordConfirm";
+import ProfileIndex from "../pages/profile";
+import ProfileEdit from "../pages/profile/ProfileEdit";
 
 const router = createBrowserRouter([
     {
-      path: "/auth/register",
-      element: <Register />,
+      path: "/",
       handle: {
-        crumb: () => <Link to="/script">Register</Link>,
-      }
-    },
-    {
-      path: "/auth/login",
-      element: <Login />,
-      handle: {
-        crumb: () => <Link to="/script">Lgin</Link>,
-      }
-    },
-    {
-      path: "/script",
-      element: <ProtectedRoute>
-        <ScriptIndex />
-      </ProtectedRoute>,
-      handle: {
-        crumb: () => <Link to="/script">Messages</Link>,
-      }
-    },
-    {
-      path: "/script/:scriptId/presentation/",
-      element: <ProtectedRoute>
-        <ScriptPresentation />
-      </ProtectedRoute>,
-      handle: {
-        crumb: (data: any) => <span>{data.threadName}</span>,
-      }
+        crumb: () => <Link to="/">Home</Link>,
+      },
+      children: [
+        {
+          path: "/",
+          element: <About />,
+          handle: {},
+        },
+        {
+          path: "/script",
+          handle: {},
+          children: [
+            {
+              path: "",
+              element: (
+                <ProtectedRoute>
+                  <ScriptIndex />
+                </ProtectedRoute>
+              ),
+              handle: {
+                crumb: () => <span> Script </span>,
+              }
+            },
+            {
+              path: ":scriptId/presentation",
+              element: (
+                <ProtectedRoute>
+                  <ScriptPresentation />
+                </ProtectedRoute>
+              ),
+              handle: {
+                crumb: () => <span> Presentation </span>,
+              }
+            },
+          ]
+        },
+        {
+          path: "/auth",
+          children: [
+            {
+              path: "register",
+              element: <Register />,
+            },
+            {
+              path: "login",
+              element: <Login />,
+            },
+            {
+              path: "forgot_password",
+              element: <ForgotPassword />,
+            },
+            {
+              path: "password_reset/confirm",
+              element: <ForgotPasswordConfirm />,
+            },
+          ]
+        },
+        {
+          path: "/profile",
+          children: [
+            {
+              path: "",
+              element: (
+                <ProtectedRoute>
+                  <ProfileIndex />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: "edit",
+              element: (
+                <ProtectedRoute>
+                  <ProfileEdit />
+                </ProtectedRoute>
+              ),
+            },
+          ]
+        },
+      ]
     },
     
-]);
+],);
 export default router;

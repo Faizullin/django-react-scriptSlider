@@ -21,4 +21,5 @@ urlpatterns = [
     path("", include('script.urls',namespace='script')),
     path("", include('script_page.urls',namespace='script_page')),
     path("", include('authentication.urls',namespace='authentication')),
+    path(r'api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
 ]

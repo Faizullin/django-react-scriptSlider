@@ -15,17 +15,7 @@ export default class ScriptPageService{
             }
         })
     }
-    static async create(data: IScriptPage): Promise<AxiosResponse<IScriptPage>> {
-        return $api.post<IScriptPage>(`/script_page/create/?script=`,data)
+    static async getById(id: string): Promise<AxiosResponse<IScriptPage>> {
+        return $api.get<IScriptPage>(`/script_page/${id}/`,)
     }
-    static async save(data: IScriptPage): Promise<AxiosResponse<IScriptPage>> {
-        return $api.post<IScriptPage>(`/script_page/save/${data.id}`,data)
-    }
-    static async saveNew(data: IScriptPage): Promise<AxiosResponse<IScriptPage>> {
-        return $api.post<IScriptPage>(`/script_page/save/`,data)
-    }
-    static async edit(data: IScriptPage): Promise<AxiosResponse<IScriptPage>> {
-        return $api.post<IScriptPage>(`/script_pages/create?script=`,data)
-    }
-
 }

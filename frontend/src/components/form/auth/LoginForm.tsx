@@ -1,13 +1,12 @@
 import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchUserData, loginUser } from '../../redux/store/reducers/authSlice';
-import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { ILoginProps } from '../../services/AuthService';
+import { loginUser } from '../../../redux/store/reducers/authSlice';
+import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 import PrimaryButton from './PrimaryButton';
 import TextInput from './TextInput';
 import InputError from './InputError';
-import InputLabel from '../InputLabel';
-import CheckboxInput from './CheckboxInput';
+import InputLabel from '../../InputLabel';
+import { ILoginProps } from '../../../models/IAuthUser';
 
 export interface ILoginFormProps {
 }
@@ -15,7 +14,7 @@ export interface ILoginFormProps {
 export default function LoginForm() {
   const dispath = useAppDispatch()
   const navigate = useNavigate()
-  const {success, error, loading,} = useAppSelector(state => state.auth)
+  const {errors, loading,} = useAppSelector(state => state.auth)
   const [data,setData] = React.useState<ILoginProps>({
     email: '',
     password: '',
@@ -33,7 +32,6 @@ export default function LoginForm() {
     event.preventDefault();
     dispath(loginUser(data)).then((response) => {
       if(response.type === loginUser.fulfilled.toString()) {
-        // window.location.reload()
         navigate('/script')
       }
     })
@@ -52,8 +50,7 @@ export default function LoginForm() {
                 isFocused={true}
                 onChange={handleInputChange}
             />
-
-            {/* <InputError message={errors.email} className="mt-2" /> */}
+            <InputError message={errors.email} className="mt-2" />
         </div>
         <div className="mt-4">
             <InputLabel htmlFor="password" value="Password" />
@@ -67,7 +64,7 @@ export default function LoginForm() {
                 onChange={handleInputChange}
             />
 
-            {/* <InputError message={errors.password} className="mt-2" /> */}
+            <InputError message={errors.password} className="mt-2" />
         </div>
         <div className="flex justify-between mt-4">
             {/* <label className="flex items-center">
@@ -76,7 +73,7 @@ export default function LoginForm() {
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
             </label> */}
               <Link
-                  to="/forgot_password"
+                  to="/auth/forgot_password"
                   className="underline text-sm text-gray-600 hover:text-gray-900"
               >
                   Forgot your password?

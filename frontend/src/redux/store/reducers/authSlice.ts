@@ -1,8 +1,6 @@
 import { createAsyncThunk, createSlice, } from '@reduxjs/toolkit'
-import { IAuthUser } from '../../../models/IAuthUser'
+import { IAuthUser, IForgotPasswordConfirmProps, IForgotPasswordProps, ILoginProps, IRegisterProps } from '../../../models/IAuthUser'
 import AuthService from '../../../services/AuthService';
-import { ILoginProps } from '../../../services/AuthService';
-import { IRegisterProps } from '../../../services/AuthService';
 import { AxiosError } from 'axios';
 import AxiosResponse from 'axios';
 import UserService from '../../../services/UserService';
@@ -11,7 +9,7 @@ interface IInitialState {
   token: string | null,
   user: IAuthUser,
   loading: boolean,
-  error: string | null ,
+  errors: any,
   success: boolean,
 }
 
@@ -20,12 +18,12 @@ const initialState: IInitialState = {
   token: initToken,
   user: {
     id: '',
-    name: '',
+    username: '',
     email: '',
-    isAuthenticated: initToken.length !== 0,
+    isAuthenticated: Boolean(initToken),
   },
   loading: false,
-  error: null ,
+  errors: {},
   success: false,
 }
 
@@ -39,7 +37,6 @@ export const fetchUserData = createAsyncThunk(
       };
     } catch (error: AxiosError | any) {
       if(error instanceof AxiosError && error.response instanceof AxiosResponse ){
-        console.log(error.response.data);
         return rejectWithValue(error.response.data);
       }
       return rejectWithValue(error)
@@ -51,7 +48,6 @@ export const registerUser = createAsyncThunk("auth/registerUser",
   async (values: IRegisterProps, { rejectWithValue }) => {
     try {
       const response = await AuthService.register(values)
-
       localStorage.setItem("token", response.data.access);
       localStorage.setItem("refreshToken", response.data.refresh);
       return {
@@ -59,7 +55,6 @@ export const registerUser = createAsyncThunk("auth/registerUser",
       };
     } catch (error: AxiosError | any) {
       if(error instanceof AxiosError && error.response instanceof AxiosResponse ){
-        console.log(error.response.data);
         return rejectWithValue(error.response.data);
       }
       return rejectWithValue(error)
@@ -71,19 +66,48 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (values: ILoginProps, { rejectWithValue }) => {
     try {
-      const response = await AuthService.login({
-        email: values.email,
-        password: values.password,
-      });
+      const response = await AuthService.login(values);
       localStorage.setItem("token", response.data.access);
       localStorage.setItem("refreshToken", response.data.refresh);
-
       return {
         ...response.data,
       }
     } catch (error) {
       if(error instanceof AxiosError && error.response instanceof AxiosResponse ){
-        console.log(error.response.data);
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue(error)
+    }
+  }
+);
+
+export const forgotUserPassword = createAsyncThunk(
+  "auth/forgotUserPassword",
+  async (values: IForgotPasswordProps, { rejectWithValue }) => {
+    try {
+      const response = await AuthService.forgotUserPassword(values);
+      return {
+        ...response.data,
+      }
+    } catch (error) {
+      if(error instanceof AxiosError && error.response instanceof AxiosResponse ){
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue(error)
+    }
+  }
+);
+
+export const forgotUserPasswordConfirm = createAsyncThunk(
+  "auth/forgotUserPasswordConfirm",
+  async (values: IForgotPasswordConfirmProps, { rejectWithValue }) => {
+    try {
+      const response = await AuthService.forgotUserPasswordConfirm(values);
+      return {
+        ...response.data,
+      }
+    } catch (error) {
+      if(error instanceof AxiosError && error.response instanceof AxiosResponse ){
         return rejectWithValue(error.response.data);
       }
       return rejectWithValue(error)
@@ -100,7 +124,7 @@ const authSlice = createSlice({
       localStorage.removeItem("refreshToken");
       state.user.isAuthenticated = false
       state.loading = false
-      state.error = null
+      state.errors = initialState.errors
     },
     setCredentials: (state, { payload }) => {
       state.user = payload
@@ -124,7 +148,7 @@ const authSlice = createSlice({
       state.user = { 
         isAuthenticated: false,
       } as IAuthUser
-      state.error = error.message ?? ""
+      state.errors = payload
       state.success = false
     })
 
@@ -145,7 +169,7 @@ const authSlice = createSlice({
       state.user = { 
         isAuthenticated: false,
       } as IAuthUser
-      state.error = error.message ?? ""
+      state.errors = payload
       state.success = false
     })
     builder.addCase(fetchUserData.pending, (state, action) => {
