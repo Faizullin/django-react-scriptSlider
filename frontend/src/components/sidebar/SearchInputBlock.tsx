@@ -13,7 +13,7 @@ export default function SearchInputBlock(){
     const [data,setData]= useState<{
         keyword: string,
     }>({
-        keyword: ''  // appliedFilters?.filters?.search || ""
+        keyword: ''
     });
     const [isResultOpen,setIsResultOpen] = useState(false)
     const [searchResult,setSearchResult] = useState<{

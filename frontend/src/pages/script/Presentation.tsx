@@ -116,12 +116,6 @@ const ScriptPresentation: React.FC<IScriptPresentation> = (props) => {
         return <Navigate to='/script'/>
     }
 
-    let pages = []
-    if(script_payload?.pages_count) {
-        for (let index = 0; index < script_payload.pages_count; index++) {
-            pages.push(index + 1)
-        }
-    }
     return (    
         <Layout>
             <Breadcrumbs />

@@ -1,38 +1,39 @@
-import React, { ReactNode } from "react";
+import { ReactNode, useState, useRef, useEffect } from "react";
+
 
 type IHeaderProps = {
     children: ReactNode
   }
 
 export default function Header({children}: IHeaderProps ){
-    const [isSticked,setIsSticked] = React.useState(false);
-    const [headerValue,setHeaderValue] = React.useState({
-        headerOffset:null,
-    });
+    const [sticky, setSticky] = useState({ isSticky: false, offset: 0 });
+    const headerRef = useRef<HTMLDivElement>(null);
 
-    const isSticky = () => {
-        if (headerValue.headerOffset && (headerValue.headerOffset - window.scrollY) < 0) {
-            setIsSticked(true);
+    const handleScroll = (elTopOffset: any, elHeight: any) => {
+        if (window.pageYOffset > (elTopOffset + elHeight)) {
+          setSticky({ isSticky: true, offset: elHeight });
         } else {
-            setIsSticked(false);
+          setSticky({ isSticky: false, offset: 0 });
         }
-    };
-    React.useEffect(() => {
-        const selectHeader = document.querySelector('#header');
-        // if(selectHeader) {
-        //     setHeaderValue(data => ({
-        //         headerOffset: selectHeader.offsetTop,
-        //     }));
-        // }    
-    }, []);
-    React.useEffect(()=>{
-        window.addEventListener("scroll", isSticky);
-        return () => {
-            window.removeEventListener("scroll", isSticky);
-        };
-    },[headerValue])
+    }
+
+    useEffect(() => {
+        if(headerRef.current) {
+            var header = headerRef.current.getBoundingClientRect();
+            const handleScrollEvent = () => {
+                handleScroll(header.top, header.height)
+            }
+        
+            window.addEventListener('scroll', handleScrollEvent);
+        
+            return () => {
+                window.removeEventListener('scroll', handleScrollEvent);
+            };
+        }
+      }, []);
+    
     return (
-        <header id="header" className={`header flex items-center ${isSticked? "sticked" : ""}`}>
+        <header id="header" ref={headerRef} className={`header flex items-center ${sticky.isSticky? "sticked" : ""}`}>
             { children }
         </header>
     );

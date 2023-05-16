@@ -59,16 +59,24 @@ const ScriptPageItemForm = (props: ScriptPageItemForm) => {
         // console.log('currentScriptPageFormData',currentScriptPageFormData,updated)
         if(updated) {
             setValue({...currentScriptPageFormData})
-            dispatch(setUpdated(false))
+            
         }
     }, [updated])
 
     React.useEffect(() => {
+        if(updated) {
+            dispatch(setUpdated(false))
+        }
         // console.log('chaneg',value,currentScriptPageFormData,updated,currentScriptPageFormData.index === value.index)
-        if(currentScriptPageFormData.index !== value.index) {
-            setValue(currentScriptPageFormData)
-        } else {
-            dispatch(setCurrentScriptPageFormData({...value}))
+        const timer = setTimeout(() => {
+            if(currentScriptPageFormData.index !== value.index) {
+                setValue(currentScriptPageFormData)
+            } else {
+                dispatch(setCurrentScriptPageFormData({...value}))
+            }
+        }, 1000)
+        return () => {
+          clearTimeout(timer);
         }
     }, [value])
 

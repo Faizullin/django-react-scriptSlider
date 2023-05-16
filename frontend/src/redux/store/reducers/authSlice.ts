@@ -2,7 +2,6 @@ import { createAsyncThunk, createSlice, } from '@reduxjs/toolkit'
 import { IAuthUser, IForgotPasswordConfirmProps, IForgotPasswordProps, ILoginProps, IRegisterProps } from '../../../models/IAuthUser'
 import AuthService from '../../../services/AuthService';
 import { AxiosError } from 'axios';
-import AxiosResponse from 'axios';
 import UserService from '../../../services/UserService';
 
 interface IInitialState {
@@ -36,7 +35,7 @@ export const fetchUserData = createAsyncThunk(
         ...response.data
       };
     } catch (error: AxiosError | any) {
-      if(error instanceof AxiosError && error.response instanceof AxiosResponse ){
+      if(error instanceof AxiosError && error.response){
         return rejectWithValue(error.response.data);
       }
       return rejectWithValue(error)
@@ -54,7 +53,7 @@ export const registerUser = createAsyncThunk("auth/registerUser",
         ...response.data,
       };
     } catch (error: AxiosError | any) {
-      if(error instanceof AxiosError && error.response instanceof AxiosResponse ){
+      if(error instanceof AxiosError && error.response){
         return rejectWithValue(error.response.data);
       }
       return rejectWithValue(error)
@@ -73,7 +72,7 @@ export const loginUser = createAsyncThunk(
         ...response.data,
       }
     } catch (error) {
-      if(error instanceof AxiosError && error.response instanceof AxiosResponse ){
+      if(error instanceof AxiosError && error.response){
         return rejectWithValue(error.response.data);
       }
       return rejectWithValue(error)
@@ -90,7 +89,7 @@ export const forgotUserPassword = createAsyncThunk(
         ...response.data,
       }
     } catch (error) {
-      if(error instanceof AxiosError && error.response instanceof AxiosResponse ){
+      if(error instanceof AxiosError && error.response){
         return rejectWithValue(error.response.data);
       }
       return rejectWithValue(error)
@@ -107,7 +106,7 @@ export const forgotUserPasswordConfirm = createAsyncThunk(
         ...response.data,
       }
     } catch (error) {
-      if(error instanceof AxiosError && error.response instanceof AxiosResponse ){
+      if(error instanceof AxiosError && error.response ){
         return rejectWithValue(error.response.data);
       }
       return rejectWithValue(error)
@@ -131,45 +130,45 @@ const authSlice = createSlice({
     },
   },
   extraReducers(builder) {
-    builder.addCase(loginUser.fulfilled, (state, {payload}) => {
+    builder.addCase(loginUser.fulfilled, (state, action) => {
       state.loading = false
       state.user = { 
-        ...payload.user,
+        ...action.payload.user,
         isAuthenticated: true,
       } as IAuthUser
       state.success = true
     })
-    builder.addCase(loginUser.pending, (state, {payload}) => {
+    builder.addCase(loginUser.pending, (state, action) => {
       state.loading = true
       state.success = false
     })
-    builder.addCase(loginUser.rejected, (state, {payload, error}) => {
+    builder.addCase(loginUser.rejected, (state, action) => {
       state.loading = false
       state.user = { 
         isAuthenticated: false,
       } as IAuthUser
-      state.errors = payload
+      state.errors = action.payload
       state.success = false
     })
 
-    builder.addCase(registerUser.fulfilled, (state, {payload}) => {
+    builder.addCase(registerUser.fulfilled, (state, action) => {
       state.loading = false
       state.user = { 
-        ...payload.user,
+        ...action.payload.user,
         isAuthenticated: true,
       } as IAuthUser
       state.success = true
     })
-    builder.addCase(registerUser.pending, (state, {payload}) => {
+    builder.addCase(registerUser.pending, (state, action) => {
       state.loading = true
       state.success = false
     })
-    builder.addCase(registerUser.rejected, (state, {payload, error}) => {
+    builder.addCase(registerUser.rejected, (state, action) => {
       state.loading = false
       state.user = { 
         isAuthenticated: false,
       } as IAuthUser
-      state.errors = payload
+      state.errors = action.payload
       state.success = false
     })
     builder.addCase(fetchUserData.pending, (state, action) => {
